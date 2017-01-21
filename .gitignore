@@ -1,0 +1,18 @@
+# Created by .ignore support plugin (hsz.mobi)
+
+# Python
+.cache/
+__pycache__
+
+# IDE
+.idea/
+/.project
+ipsh.py
+
+# Configuration files
+conf/
+data/
+output/
+
+# OS specific files
+.DS_Store
