@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import datetime as dt
 
 from lxml import html
 import requests
@@ -30,7 +31,29 @@ def posting_frame(posting_response):
     tree = html.fromstring(posting_response.text)
     posting_divs = tree.xpath('//div[contains(@itemtype,"JobPosting")]')
     posting_data = [_parse_job_posting(p) for p in posting_divs]
-    return pd.DataFrame(posting_data)
+    return _normalize_frame(pd.DataFrame(posting_data))
+
+_DAYS = 'days'
+_DATE = 'date'
+_COMP = 'compensation'
+_MIN_COMP = 'Min ' + _COMP
+_MAX_COMP = 'Max ' + _COMP
+
+
+def _normalize_frame(df):
+    # Date from days
+    days_ago_srs = df[_DAYS]
+    days_srs = days_ago_srs.str.split(' ago', expand=True)[0]
+    df[_DATE] = dt.date.today() - pd.to_timedelta(days_srs)
+
+    # Salary
+    comp_srs = df[_COMP].str.split(' a year', expand=True)[0]
+    comp_df = comp_srs.str.split(' - ', expand=True)
+    comp_df[1] = comp_df[1].where(pd.notnull(comp_df[1]), comp_df[0])
+    df[_MIN_COMP] = comp_df[0]
+    df[_MAX_COMP] = comp_df[1]
+
+    return df
 
 
 def _parse_job_posting(job_posting):
@@ -38,8 +61,8 @@ def _parse_job_posting(job_posting):
     col_paths = [
         ('title', './/h2[contains(@class,"jobtitle")]/a/@title'),
         ('url', './/h2[contains(@class,"jobtitle")]/a/@href'),
-        ('date', './/span[contains(@class,"date")]/text()'),
-        ('compensation', './/td[contains(@class,"snip")]/nobr/text()'),
+        (_DAYS, './/span[contains(@class,"date")]/text()'),
+        (_COMP, './/td[contains(@class,"snip")]/nobr/text()'),
         ('company', './/span[contains(@class,"company")]/span/text()'),
         ('location', './/span[contains(@class,"location")]//text()'),
         ('review_url', ru),
