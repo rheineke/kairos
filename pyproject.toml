@@ -23,6 +23,7 @@ packages = ["kairos"]
 
 [tool.ruff]
 line-length = 88
+extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
