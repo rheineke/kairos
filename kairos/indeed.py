@@ -45,7 +45,7 @@ def _normalize_frame(df):
     # Date from days
     days_ago_srs = df[_DAYS]
     days_srs = days_ago_srs.str.split(" ago", expand=True)[0]
-    df[_DATE] = dt.date.today() - pd.to_timedelta(days_srs)
+    df[_DATE] = pd.Timestamp(dt.date.today()) - pd.to_timedelta(days_srs)
 
     # Salary
     comp_srs = df[_COMP].str.split(" a year", expand=True)[0]
